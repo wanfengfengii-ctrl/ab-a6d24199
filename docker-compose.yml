@@ -1,0 +1,30 @@
+services:
+  web:
+    build: .
+    image: flare-audit:latest
+    # 宿主机端口可配置：复制 .env.example 为 .env 后修改 HOST_PORT
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    environment:
+      - PORT=8080
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=3); sys.exit(0 if json.load(r)['status']=='ok' else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  # 一次性校验服务：自行退出，并以退出码报告
+  # 代码测试、构建检查与导排 API 冒烟结果（0=全部通过）。
+  # 运行：docker compose build && docker compose run --rm verify
+  verify:
+    image: flare-audit:latest
+    build: .
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://web:8080
+    entrypoint: ["bash", "scripts/verify.sh"]
+    restart: "no"

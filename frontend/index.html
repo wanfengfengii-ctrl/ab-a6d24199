@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>化工园区事故导排网络 · 检修前泄压校核</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>化工园区事故导排网络 · 检修前泄压校核</h1>
+    <p class="subtitle">
+      录入泄压源、安全焚烧端、汇合节点及带方向 / 最大流量 / 检修标记的管段；
+      系统对正常网络与<b>每个可检修管段临时失效后的残余网络</b>分别独立求最大流，
+      全部满足事故持续排出流量方可放行。
+    </p>
+  </header>
+
+  <main class="layout">
+    <!-- ============ 当前输入（草稿） ============ -->
+    <section class="panel panel-input">
+      <div class="panel-head">
+        <h2>当前输入（草稿）</h2>
+        <span id="draft-state" class="tag tag-muted">未保存</span>
+      </div>
+
+      <div class="field">
+        <label for="required-flow">事故时必须持续排出的流量（容量单位，如 m³/h）</label>
+        <input id="required-flow" type="number" min="1" step="1" placeholder="例如 60" />
+      </div>
+
+      <h3>节点</h3>
+      <p class="hint">恰好一个泄压源（source）与一个安全焚烧端（sink），其余为汇合节点。</p>
+      <table class="grid" id="node-table">
+        <thead>
+          <tr><th>#</th><th>节点编号</th><th>类型</th><th>名称（可选）</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-ghost" id="add-node">+ 添加节点</button>
+
+      <h3>管段</h3>
+      <p class="hint">方向为“起点 → 终点”；最大流量为该管段容量上限；勾选“可检修”后，
+        审计将校核该管段临时失效情形。管段按录入顺序排列，失败时报告首条失效管段。</p>
+      <table class="grid" id="pipe-table">
+        <thead>
+          <tr>
+            <th>#</th><th>管段编号</th><th>起点</th><th>终点</th>
+            <th>最大流量</th><th>可检修</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-ghost" id="add-pipe">+ 添加管段</button>
+
+      <div class="actions">
+        <button type="button" class="btn" id="save-draft">保存草稿</button>
+        <button type="button" class="btn btn-primary" id="submit-audit">提交审计</button>
+        <button type="button" class="btn btn-ghost" id="load-example">载入示例网络</button>
+      </div>
+      <div id="input-msg" class="input-msg" role="status"></div>
+    </section>
+
+    <!-- ============ 审计结论 ============ -->
+    <section class="panel panel-result">
+      <div class="panel-head">
+        <h2>审计结论</h2>
+        <span id="audit-state" class="tag tag-muted">尚未审计</span>
+      </div>
+
+      <!-- 过期历史结论横幅 -->
+      <div id="stale-banner" class="banner banner-warn" hidden>
+        ⚠ 草稿已修改，下方为<b>历史结论（已过期）</b>，不能作为当前草稿的审计结果；
+        请重新提交审计。
+      </div>
+
+      <div id="result-empty" class="placeholder">
+        提交审计后，此处将显示正常网络及逐条管段失效情形的最大可导排量。
+      </div>
+      <div id="result-body" hidden></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    最大流 / 最小割（Dinic）服务端独立计算 · 管段容量为有向上限 · 结论与草稿内容指纹绑定
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
